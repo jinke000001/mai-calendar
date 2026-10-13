@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f5ef">
+  <meta name="description" content="麦日历：把手动查询的活动挑选后加入自己的 Mac 日历，更新时保留选择。">
+  <title>麦日历 · 好日子，先记下来</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='7' y='11' width='50' height='46' rx='10' fill='%23ebcd64'/%3E%3Cpath d='M7 26h50M21 7v13M43 7v13' fill='none' stroke='%232d3631' stroke-width='5'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="activity-data.js"></script>
+  <script defer src="campaigns.js"></script>
+  <script defer src="calendar.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="site-header shell">
+    <a class="brand" href="./index.html" aria-label="麦日历首页">
+      <svg viewBox="0 0 36 36" aria-hidden="true"><rect x="5" y="8" width="26" height="25" rx="6" fill="currentColor"/><path d="M5 17h26M12 4v9M24 4v9" fill="none" stroke="#29352f" stroke-width="2.4" stroke-linecap="round"/><path d="m13 25 3 3 7-7" fill="none" stroke="#29352f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>麦日历<span class="brand-en">MAI CALENDAR</span></span>
+    </a>
+    <span class="prototype-label"><span class="status-dot" aria-hidden="true"></span>开源 · 本地运行</span>
+  </header>
+
+  <main class="shell">
+    <div class="demo-notice" role="note">
+      <span id="sourceStamp" class="demo-stamp">虚构演示</span>
+      <p id="sourceNotice">首次运行使用虚构活动。真实活动需要你手动查询并导入。</p>
+    </div>
+
+    <section id="updatePanel" class="update-panel" aria-labelledby="updateHeading">
+      <div><h2 id="updateHeading">手动更新活动</h2><p id="preparedNotice">正在连接本地服务…</p></div>
+      <div class="update-actions">
+        <button id="demoUpdate" class="text-button" type="button" disabled>演示改期</button>
+        <button id="importSnapshot" class="secondary-button" type="button" disabled>导入快照</button>
+        <button id="updateActivities" class="secondary-button" type="button" disabled>更新活动</button>
+      </div>
+      <input id="snapshotFile" type="file" accept=".json,application/json" aria-label="选择活动快照 JSON 文件" hidden>
+      <p id="updateStatus" class="update-status" role="status" aria-live="polite"></p>
+      <p id="updateNote" class="update-note">先选一项虚构活动，再点“演示改期”和“更新活动”，体验选择保留。</p>
+    </section>
+
+    <section class="intro" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">A LITTLE SOMETHING TO LOOK FORWARD TO</p>
+        <h1 id="page-title">好日子，<span>先记下来。</span></h1>
+        <p class="intro-copy">挑几场感兴趣的活动，把期待留在自己的日历里。</p>
+      </div>
+      <div class="intro-art" aria-hidden="true">
+        <span class="art-ticket"><span>GOOD DAYS</span><b>10</b><span>COMING SOON</span></span>
+        <svg class="art-flower" viewBox="0 0 80 80"><path d="M40 8c7-12 20-5 17 7 13-5 21 8 10 17 14 3 12 18-1 20 9 10-1 21-13 14-1 15-16 16-20 3-9 11-22 2-17-11-14 2-20-12-8-19-12-7-6-21 8-19-4-13 9-22 19-11Z" fill="#ce533e"/><circle cx="39" cy="39" r="12" fill="#f8edc5"/><path d="M33 38h1m10 0h1M34 44q5 5 10 0" stroke="#29352f" fill="none" stroke-width="3" stroke-linecap="round"/></svg>
+      </div>
+    </section>
+
+    <div class="workspace">
+      <section class="activities" aria-labelledby="activities-heading">
+        <div class="section-heading">
+          <div class="heading-with-count"><h2 id="activities-heading">挑选活动</h2><span id="visibleCount" class="count-tag">0</span></div>
+          <nav class="month-nav" aria-label="快照月份">
+            <button id="previousMonth" class="icon-button" type="button" aria-label="查看上一个月" disabled>‹</button>
+            <span id="monthLabel">2026 年 10 月</span>
+            <button id="nextMonth" class="icon-button" type="button" aria-label="查看下一个月" disabled>›</button>
+          </nav>
+        </div>
+
+        <div class="availability-tabs" role="group" aria-label="按时间核实状态筛选">
+          <button id="readyTab" class="availability-tab active" type="button" data-view="ready" aria-pressed="true">可加入日历</button>
+          <button id="allTab" class="availability-tab" type="button" data-view="all" aria-pressed="false">浏览全部</button>
+        </div>
+        <div class="filters" role="group" aria-label="按活动类型筛选">
+          <button class="filter active" type="button" data-category="all" aria-pressed="true">全部类型</button>
+          <button class="filter" type="button" data-category="merch" aria-pressed="false">周边小物</button>
+          <button class="filter" type="button" data-category="new" aria-pressed="false">食品与优惠</button>
+          <button class="filter" type="button" data-category="meet" aria-pressed="false">亲子活动</button>
+        </div>
+
+        <div class="list-summary"><p id="listHint">正在核对活动时间…</p><button id="clearFilters" class="text-button" type="button" hidden>清除筛选</button></div>
+        <ul id="activityList" class="activity-list" aria-label="真实活动列表"></ul>
+        <div id="emptyState" class="empty-state" hidden>
+          <span aria-hidden="true">↗</span>
+          <h3>这次筛选没有活动</h3>
+          <p>换一种类型，或浏览其他活动与时间核对说明。</p>
+          <button id="showAllActivities" class="secondary-button" type="button">浏览本月全部活动</button>
+        </div>
+        <p id="catalogSummary" class="list-footer"></p>
+        <p class="list-footer">只有时间已核实、尚未开售的活动可以挑选。再次点击可取消。</p>
+        <p id="dataError" class="error-message" role="alert" hidden></p>
+      </section>
+
+      <aside class="sidebar" aria-label="日历预览和我的选择">
+        <section class="month-panel" aria-labelledby="calendar-heading">
+          <div class="month-panel-heading"><h2 id="calendar-heading">十月，一眼看全</h2><span class="small-label">已核实开售日</span></div>
+          <div class="weekdays" aria-hidden="true"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+          <div id="monthGrid" class="month-grid" role="group" aria-label="点击可提醒的开售日期进行筛选"></div>
+          <div class="calendar-legend"><span class="legend-dot" aria-hidden="true"></span>可提醒的开售日<span class="legend-selected">实心为已选</span></div>
+        </section>
+
+        <section class="selection-panel" aria-labelledby="selection-heading">
+          <div class="selection-heading"><div class="heading-with-count"><h2 id="selection-heading">我的选择</h2><span id="selectedCount" class="count-tag">0</span></div><button id="clearSelection" class="text-button" type="button" disabled>清空</button></div>
+          <div id="selectionEmpty" class="selection-empty"><svg viewBox="0 0 60 60" aria-hidden="true"><path d="M13 10h34v40H13z" fill="#fbf8ef" stroke="#bcbea9" stroke-width="1.5"/><path d="M20 21h20M20 28h13M20 35h16" stroke="#bcbea9" stroke-width="2" stroke-linecap="round"/><path d="m36 44 4 4 9-9" fill="none" stroke="#596d57" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg><p>先挑一个喜欢的日子</p><span>选中的活动会出现在这里</span></div>
+          <ul id="selectionList" class="selection-list" aria-label="已选活动" hidden></ul>
+          <div class="reminder-field"><label for="reminder">提醒时间</label><select id="reminder"><option value="none">不设置提醒</option><option value="previous-day">前一天上午 9 点</option><option value="same-day">当天上午 9 点</option></select></div>
+          <p class="timezone-note">活动与提醒时间均按北京时间。</p>
+          <button id="subscribeCalendar" class="primary-button subscribe-button" type="button" disabled>订阅到 Mac 日历 ↗</button>
+          <p id="subscriptionStatus" class="export-help" role="status">正在连接本地订阅…</p>
+          <p class="export-help">只需订阅一次。更新活动或选择后，Mac 刷新订阅时同步；本地服务需保持运行。</p>
+          <button id="exportButton" class="secondary-button export-button" type="button" disabled><span>下载一次性文件</span><span aria-hidden="true">↗</span></button>
+        </section>
+      </aside>
+    </div>
+    <footer class="site-footer"><span>每一份期待，都有自己的位置。</span><span>非官方本地体验 · 手动更新 · 插画仅示意</span></footer>
+  </main>
+
+  <div class="mobile-selection-bar"><div><b id="mobileSelectionCount">尚未选择活动</b><span>本地订阅仅在这台 Mac 使用</span></div><button id="mobileExportButton" class="primary-button" type="button" disabled>日历选项 ↗</button></div>
+  <div id="announcement" class="sr-only" role="status" aria-live="polite"></div>
+
+  <dialog id="exportDialog" aria-labelledby="exportTitle" aria-describedby="exportDescription">
+    <div class="dialog-content">
+      <button id="closeDialog" class="dialog-close icon-button" type="button" aria-label="关闭日历预览">×</button>
+      <span class="eyebrow">YOUR LITTLE PLANS</span>
+      <h2 id="exportTitle">把期待带进日历</h2>
+      <p id="exportDescription" class="dialog-description">确认这些活动，下载后在日历软件中导入。</p>
+      <div class="dialog-warning">这些是按官方文案核对的开售提醒，参与条件与后续变更请以官方为准。建议导入单独的「麦日历体验」日历，方便管理。</div>
+      <ul id="exportPreview" class="export-preview" aria-label="日历文件中的活动"></ul>
+      <div class="dialog-reminder"><label for="dialogReminder">提醒时间</label><select id="dialogReminder"><option value="none">不设置提醒</option><option value="previous-day">前一天上午 9 点</option><option value="same-day">当天上午 9 点</option></select></div>
+      <p class="dialog-footnote">北京时间 · 一次性导入，后续不会自动更新</p>
+      <button id="downloadCalendar" class="primary-button download-button" type="button">下载日历文件</button>
+      <div id="importStep" class="import-step" hidden>
+        <p class="download-confirmation" role="status">✓ 日历文件已生成，包含 <span id="exportedCount"></span> 项活动开售提醒。</p>
+        <h3>接下来，在日历里确认导入</h3>
+        <p>在 Mac 上，打开刚下载的 <b>麦日历-真实活动.ics</b>，按「日历」的提示选择目标日历并确认导入。</p>
+        <p class="import-footnote">当前页面尚未向你的日历写入任何活动。其他设备可用支持 .ics 的日历软件导入；重复导入可能产生重复活动。</p>
+      </div>
+      <p id="exportError" class="error-message" role="alert" hidden></p>
+    </div>
+  </dialog>
+  <dialog id="subscriptionDialog" aria-labelledby="subscriptionTitle">
+    <div class="dialog-content">
+      <button id="closeSubscription" class="dialog-close icon-button" type="button" aria-label="关闭订阅说明">×</button>
+      <span class="eyebrow">YOUR CALENDAR, KEPT IN STEP</span>
+      <h2 id="subscriptionTitle">订阅一次，后续跟着更新</h2>
+      <p class="dialog-description">只同步你已选的活动。已有的一次性导入日程不会自动合并；可隐藏旧体验日历，避免显示两份。</p>
+      <label class="subscription-label" for="subscriptionUrl">本机订阅地址</label>
+      <input id="subscriptionUrl" class="subscription-url" readonly>
+      <div class="subscription-actions"><button id="copySubscription" class="primary-button" type="button">复制订阅地址</button></div>
+      <p class="dialog-description">在 Mac 日历的“文件 → 新建日历订阅”中粘贴此地址，位置选“Mac”，自动刷新选“每15分钟”。需要提醒时，取消“移除”下的“提醒”，保持“忽略提醒”不勾选。</p>
+      <p class="dialog-footnote">地址仅供这台 Mac 使用。更新不是即时推送，可在日历中用“显示 → 刷新日历”立即核对。关闭本地服务后会暂停更新。</p>
+      <p id="copyStatus" class="dialog-description" role="status"></p>
+    </div>
+  </dialog>
+  <noscript><div class="noscript-note">此概念稿需要启用 JavaScript，才能挑选活动和生成日历文件。</div></noscript>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "mai-calendar",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Choose activities from a manually queried McDonald's MCP snapshot and subscribe locally in Mac Calendar.",
+  "license": "MIT",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node server.cjs",
+    "test": "node --test tests/*.test.cjs",
+    "snapshot:prepare": "node scripts/prepare-update.cjs",
+    "check": "node scripts/check.cjs"
+  }
+}

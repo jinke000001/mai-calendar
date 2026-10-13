@@ -1,0 +1,14 @@
+.DS_Store
+._*
+output/
+.local-calendar/
+.playwright-cli/
+node_modules/
+.env
+.env.*
+!.env.example
+
+# Local planning history is not part of the public release.
+麦当劳活动日历订阅 项目计划书.md
+*.pem
+*.key
